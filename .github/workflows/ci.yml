@@ -12,7 +12,8 @@ env:
   # --- AWS ECR Future Setup ---
   # AWS_REGION: us-east-1
   # ECR_REPOSITORY: my-app-repository
-  APP_IMAGE: my-app-image:latest
+  VERSION: "0.0.${{ github.run_number }}"
+  APP_IMAGE: my-app-image
 
 jobs:
   # ----------------------------------------
@@ -28,7 +29,7 @@ jobs:
       - name: Build Docker Image
         run: |
           # Build locally on your Mac
-          docker build -t $APP_IMAGE .
+          docker build -t $APP_IMAGE:latest -t $APP_IMAGE:$VERSION .
 
   # ----------------------------------------
   # STEP 2: TEST
@@ -44,7 +45,7 @@ jobs:
       - name: Run Tests
         run: |
           # Uses the locally built image
-          docker run --rm $APP_IMAGE python -c "print('Running Tests on local runner...')"
+          docker run --rm $APP_IMAGE:$VERSION python -c "print('Running Tests on local runner...')"
 
   # ----------------------------------------
   # STEP 3: DEPLOY
@@ -77,8 +78,10 @@ jobs:
       #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       #   run: |
       #     # Tag the local image for ECR
-      #     docker tag $APP_IMAGE $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+      #     docker tag $APP_IMAGE:$VERSION $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$VERSION
+      #     docker tag $APP_IMAGE:$VERSION $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
       #     # Push to ECR
+      #     docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$VERSION
       #     docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
       - name: Deploy Status
